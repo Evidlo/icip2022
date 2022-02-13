@@ -5,38 +5,20 @@
 \documentclass{article}
 \usepackage{algorithm,algpseudocode,bm,spconf,amsmath,graphicx,verbatim}
 
-% Title.
-% ------
 \title{Maximum Likelihood Multiframe Registration Under Constant Translation}
-%
-% Single address.
-% ---------------
 \name{Evan Widloski and Farzad Kamalabadi\thanks{Thanks to XYZ agency for funding.}}
 \address{University of Illinois Urbana-Champaign}
-%
-% For example:
-% ------------
-%\address{School\\
-%	Department\\
-%	Address}
-%
-% Two addresses (uncomment and modify for two-address case).
-% ----------------------------------------------------------
-%% \twoauthors {A. Author-one, B. Author-two\sthanks{Thanks to XYZ agency for funding.}}
-%% 	{School A-B\\
-%% 	Department A-B\\
-%% 	Address A-B}
-%  {C. Author-three, D. Author-four\sthanks{The fourth author performed the work
-%	while at ...}}
-%	{School C-D\\
-%	Department C-D\\
-%	Address C-D}
-%
+
+% ------------------- Macros ----------------------
+% probability equals sign
+\newcommand\peq{\mkern1.5mu{=}\mkern1.5mu}
+% likelihood center pipe
+\newcommand\lpipe{\mkern1.5mu{|}\mkern1.5mu}
+
+
+% ------------------- Header ----------------------
 \begin{document}
-%\ninept
-%
 \maketitle
-%
 \begin{abstract}
   We present a registration algorithm which jointly estimates motion and the ground truth image from a set of noisy frames under rigid, constant, translation.  With additive white Gaussian noise, the algorithm is optimal in the maximum likelihood sense.  Furthermore, the algorithm is parameterless and non-iterative, requiring a fixed number of operations commonly available on embedded imaging systems such as FFT, multiplication, and downsampling operations which facilitates speed and ease of implementation.  The computation time and accuracy is compared to other algorithms of the same class.  The algorithm outperforms other pairwise or multiframe methods without an explicit motion model, especially in the low SNR regime.
 \end{abstract}
@@ -111,7 +93,7 @@ The algorithm can be accelerated by performing correlations in the frequency dom
 \label{eq:algorithm}
 \end{equation}
 
-where $D_m$ is a downscale operator by $m$ pixels (with zero padding to maintain shape), $\mathcal{F}$ is the FFT algorithm, $Y_k$ is the Fourier transform of $y_k$, and $\odot$ is the elementwise product operator.
+where $D_m$ is a downsample operator by $m$ pixels (with zero padding to maintain shape), $\mathcal{F}^{-1}$ is the inverse FFT algorithm, $Y_k$ is the Fourier transform of $y_k$, and $\odot$ is the elementwise product operator.
 The algorithm can be broken into 4 steps, shown below and illustrated graphically in Figure \ref{fig:algorithm}:
 
 \begin{enumerate}
@@ -119,7 +101,7 @@ The algorithm can be broken into 4 steps, shown below and illustrated graphicall
     $$Y_k=\mathcal{F}(y_k) \text{ for } k=1,...,K$$
   \item Compute image correlations and sum into groups by degree of separation $m$:
     $$S_m = \mathcal{F}^{-1} \left( \sum_{k=1}^{K-m} Y_k \odot Y_{k+m} \right) \text{ for } m=1, ..., K-1$$
-  \item Downscale correlation groups by degree of separation and sum:
+  \item Downsample correlation groups by degree of separation and sum:
     $$\sum_{m=1}^{K-1} D_m \left[ S_m \right]$$
   \item Take the argmax of the resultant surface to find the estimate $\hat{c}$
     $$\hat{c} = \arg \max_c \sum_{m=1}^{K-1} D_m \left[ S_m \right]$$
@@ -138,7 +120,7 @@ The algorithm can be broken into 4 steps, shown below and illustrated graphicall
 \section{Proof of Optimality}
 \label{sec:optimality}
 
-The proof of optimality is presented in 3 parts
+The proof of optimality is presented in 3 parts:
 
 \begin{enumerate}
 \item Derive expression for likelihood maximization over $c$ and $\mu$
@@ -150,39 +132,69 @@ Given the previous observation model
 
 $$y_k = T_{kc}(\mu) + n_k$$
 
-assume $n_k \sim \mathcal{N}(0, \sigma^2)$ is additive white Gaussian noise with variance $\sigma^2$.  Without loss of generality, we assume the observed frames to be one dimensional vectors of length $N$.
+assume $n_k \sim \mathcal{N}(0, \sigma^2)$ is additive white Gaussian noise with variance $\sigma^2$.  Without loss of generality, we assume the observed frames to be one dimensional vectors of length $N$. ***(FIXME: summation offset)
 
 The log-likelihood of having a particular $c$ and $\mu$ given an observation sequence is
 
-\begin{eqnarray*}
-\begin{aligned}
-  &\arg \max_{c, \mu} \ln \mathcal{L}(c, \mu | y_1, ..., y_K) = \ln \prod_{k=1}^K \mathcal{L}(c, \mu | y_k) \\
-  &=\arg \max_{c, \mu} \ln \prod_{k=1}^K \prod_{n=1}^N \mathcal{L}(c, \mu | y_{k,n}) \\
-  &=\arg \max_{c, \mu} \prod_{k=1}^K \prod_{n=1}^N \frac{1}{\sigma^2 \sqrt{2 \pi}} \text{exp} \left[- \frac{(y_{k,n} - T_{kc}(\mu)_n)^2}{\sigma^2}\right] \\
-  &=\arg \min_{c, \mu} \sum_{k=1}^K \sum_{n=1}^N (y_{k,n} - T_{kc}(\mu)_n)^2 \\
-\end{aligned}
-\end{eqnarray*}
+\begin{align}
+  \hat{c}, \hat{\mu} &= \arg \max_{c, \mu} \ln \mathcal{L}(c, \mu \lpipe y_1, ..., y_K) = \ln \prod_{k=1}^K \mathcal{L}(c, \mu \lpipe y_k) \nonumber \\
+  &=\arg \max_{c, \mu} \ln \prod_{k=1}^K \prod_{n=1}^N \mathcal{L}(c, \mu \lpipe y_{k,n}) \nonumber \\
+  &=\arg \max_{c, \mu} \ln \prod_{k=1}^K \prod_{n=1}^N \frac{1}{\sigma^2 \sqrt{2 \pi}} \text{exp} \left[- \frac{(y_{k,n} - T_{kc}(\mu)_n)^2}{\sigma^2}\right] \nonumber \\
+  &=\arg \min_{c, \mu} \sum_{k=1}^K \sum_{n=1}^N (y_{k,n} - T_{kc}(\mu)_n)^2 \label{eqn:min}
+\end{align}
 
 To show that the value of $\mu$ with maximum likelihood depends only on $c$, we will take the derivative of the expression being minimized with respect to the jth element of $\mu$.  Due to the circular nature of $T$, some modular arithmetic is necessary, denoted by operator $\%$.
 
-\begin{eqnarray*}
-\begin{aligned}
+\begin{align*}
   &\frac{d}{d\mu_j}\left[\sum_{k=1}^K \sum_{n=1}^N (y_{k,n} - T_{kc}(\mu)_n)^2\right] = 0 \\
   &=\sum_{k=1}^K \sum_{n=1}^N \frac{d}{d\mu_j}\left[(y_{k,n} - \mu_{kc + n \% N})^2\right] = 0 \\
   &=\sum_{k=1}^K \frac{d}{d\mu_j}\left[(y_{k,j - kc \% N} - \mu_j)^2\right] = 0 \\
-  &=\sum_{k=1}^K \frac{d}{d\mu_j}\left[(T_{-kc}(y_{k,j}) - \mu_j)^2\right] = 0 \\
-  &=\sum_{k=1}^K -2(T_{-kc}(y_{k,j}) - \mu_j) = 0 \\
+  &=\sum_{k=1}^K \frac{d}{d\mu_j}\left[(T_{-kc}(y_k)_j - \mu_j)^2\right] = 0 \\
+  &=\sum_{k=1}^K -2(T_{-kc}(y_k)_j - \mu_j) = 0 \\
   &\Longrightarrow \mu_j = \sum_{k=1}^K T_{-kc}(y_k)_j \\
   &\Longrightarrow \mu = \sum_{k=1}^K T_{-kc}(y_k)
-\end{aligned}
-\end{eqnarray*}
+\end{align*}
 
-So the most likelihood reconstruction for the reference image $\mu$ is simply the sum of the motion-corrected noisy frames.
+This is simply the sum of the motion corrected noisy frames.  Plugging this into Equation \ref{eqn:min}, we can see that the minimization over $\mu$ can be dropped.  Expanding an eliminating constant terms, we get
+
+\begin{align*}
+\end{align*}
+
+
+\newpage
+.
+\newpage
 
 % ------------------- Experimental Results ----------------------
 \section{Experimental Results}
 \label{sec:results}
 
+\begin{figure}[htb]
+\begin{minipage}[b]{.48\linewidth}
+  \centering
+  \centerline{\includegraphics[width=4.0cm]{images/recon_clean.png}}
+%  \vspace{1.5cm}
+  \centerline{Ground truth}\medskip
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.48\linewidth}
+  \centering
+  \centerline{\includegraphics[width=4.0cm]{images/recon.png}}
+%  \vspace{1.5cm}
+  \centerline{Reconstruction}\medskip
+\end{minipage}
+  \caption{Reconstruction result for -30dB SNR and $K=30$ frames.}
+\label{fig:scene}
+\end{figure}
+
+\begin{figure}[htb]
+  \begin{minipage}[b]{1\linewidth}
+    \centering
+    \centerline{\includegraphics[width=8.5cm]{images/mse.png}}
+  \end{minipage}
+  \caption{(placeholder***) Registration MSE for various observation SNRs and number of frames $K$.}
+  \label{fig:mse}
+\end{figure}
 
 % ------------------- Experimental Results ----------------------
 \section{Relation to Prior Work}

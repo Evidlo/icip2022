@@ -35,7 +35,7 @@ def get_frames(
     ), "Frames drift outside of scene bounds"
 
     # drift should be integer amount on HR grid
-    assert(type(drift[0]) is int and type(drift[1]) is int)
+    assert(type(drift[0]) in (np.int64, int) and type(drift[1]) in (np.int64, int))
 
     # initialize output array
     frames = np.zeros((num_frames, frame_size[0], frame_size[1]))

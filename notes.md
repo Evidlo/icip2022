@@ -56,6 +56,8 @@
   - apply subpixel sinc interpolation theory to this algorithm for true ML extension to subpixel regime
 - integration motion blur properly into model
   - 
+  
+- image priors? regularization?
 
 
 

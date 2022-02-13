@@ -14,7 +14,7 @@ scene = hubble_deep_field()[:, :, 0]
 frames_clean = get_frames(
     scene=scene,
     resolution_ratio=2,
-    drift=(10, 10),
+    drift=(4, 4),
     frame_size=(250, 250),
     num_frames=30,
     start=(0, 0),
@@ -54,14 +54,20 @@ print(est_rigid)
 # %% multiml
 
 from multiml import register
-from multiml import correlate_and_sum, scale_and_sum
+from multiml import correlate_and_sum, scale_and_sum, shift_and_sum
 
 # csums = correlate_and_sum(frames)
 # result, scaled = scale_and_sum(csums, scale_dir='down')
 est_multiml = register(frames, 'down')
 print(est_multiml)
+recon = shift_and_sum(frames, est_multiml, mode='crop')
 
 # %% plot - plot results
+
+plt.subplot(1, 2, 1)
+plt.imsave('../images/recon.png', recon, cmap='gist_heat')
+plt.subplot(1, 2, 2)
+plt.imsave('../images/recon_clean.png', frames_clean[len(frames_clean) // 2], cmap='gist_heat')
 
 # plt.imshow(o.frames[0])
 # plt.figure()
