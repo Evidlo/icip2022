@@ -111,7 +111,24 @@
   - computes gradient with respect to shift
   - https://opg.optica.org/ao/fulltext.cfm?uri=ao-53-24-F1&id=297328
   
+- projection-based image registration under fixed pattern noise
+  - talks about initial calibration step to remove fixed noise
+  - talks about windowing to remove circularity assumption**
+  - https://ieeexplore.ieee.org/abstract/document/974571
+  
+- iterative phase correlation for high-precision subpixel registration
+  - good references in introduction
+  - handles rotation scale w/ log-polar transform
+  
        
 # software
 
 - https://github.com/bsavitzky/rigidRegistration
+
+# todo
+
+- talk about rotation/scaling using log-polar transform
+- address circularity assumption - handled with windowing addressed in other literature
+  - "projection-based image registration under fixed pattern noise"
+  - iterative phase correlation for high-precision subpixel registration
+  - maybe cite Harris 1978?

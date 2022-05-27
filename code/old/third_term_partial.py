@@ -15,6 +15,7 @@ c = 1
 
 y = np.zeros(N)
 y[0] = 1
+# y = [1, 2, 3, 4]
 
 y_list = [np.roll(y, c * k) for k in range(K)]
 
@@ -42,23 +43,27 @@ def compute_third2(*, K, c, N, y_list):
             for l in range(0, K):
                 temp += y_list[l][((k - l) * c + n) % N]
             temp = temp**2
-            print(temp, end='')
+            # print(temp, end='')
             # subtract self mults
             for l in range(0, K):
                 temp -= y_list[l][((k - l) * c + n) % N]**2
             # remove doubles
             temp /= 2
             result += temp
-            print(' -', temp)
+            # print(' -', temp)
 
     return result
 
+print(compute_third(K=K, c=0, N=N, y_list=y_list))
 print(compute_third2(K=K, c=0, N=N, y_list=y_list))
 print()
+print(compute_third(K=K, c=1, N=N, y_list=y_list))
 print(compute_third2(K=K, c=1, N=N, y_list=y_list))
 print()
+print(compute_third(K=K, c=2, N=N, y_list=y_list))
 print(compute_third2(K=K, c=2, N=N, y_list=y_list))
 print()
+print(compute_third(K=K, c=3, N=N, y_list=y_list))
 print(compute_third2(K=K, c=3, N=N, y_list=y_list))
 
 # %% multiml ------------------

@@ -22,7 +22,7 @@ def compute_second(*, K, c, N, y_list):
         for n in range(0, N):
             for l in range(0, K):
                  # += y_list[l][((k - l) * c + n) % N]
-                result += y_list[k][n] * y_list[l][((k - l) * c + N) % N]
+                result += y_list[k][n] * y_list[l][((k - l) * c + n) % N]
 
     return result
 
@@ -117,15 +117,15 @@ first = norm(scan(compute_first, c=c, K=K, N=N, y_list=y_list))
 second = norm(scan(compute_second, c=c, K=K, N=N, y_list=y_list))
 third = norm(scan(compute_third, c=c, K=K, N=N, y_list=y_list))
 combined = norm(scan(compute_combined, c=c, K=K, N=N, y_list=y_list))
-added = -2 * second + third
-multiml = 30 * norm(compute_multiml(c=c, K=K, N=N, y_list=y_list))
+added = norm(-2 * second + third)
+# multiml = 30 * norm(compute_multiml(c=c, K=K, N=N, y_list=y_list))
 
 plt.plot(first, label='first')
 plt.plot(second, label='second')
 plt.plot(third, label='third')
 # plt.plot(combined, '*', label='combined')
 plt.plot(added, 'o', label='added')
-plt.plot(multiml, label='multiml')
+# plt.plot(multiml, label='multiml')
 
 plt.legend(loc='upper right')
 plt.show()
