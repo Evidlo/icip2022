@@ -2,13 +2,11 @@
 ## Evan Widloski - 2017-02-17
 ## ECE321 Mini Project
 
-from platypus.algorithms import NSGAII
-from platypus.core import Problem
-from platypus.types import Real, Subset
 import numpy as np
-from scipy.optimize import differential_evolution as de
 from multiml.observation import get_frames, add_noise
-from gratadour import f
+from scipy.optimize import fmin_cg
+
+from gratadour import f, fprime
 
 # %% scene
 
@@ -36,22 +34,21 @@ frames = add_noise(
 
 # %% optimize
 
-def f2(shift, frames):
-    shifts = [(shift[0] * k, shift[1] * k) for k in range(1, len(frames) + 1)]
-    return f(shifts, frames)
-
 def register(frames):
-    result = de(
-        # f,
-        f2,
-        # [(0, 250)] * 2 * len(frames),
-        [(0, frames.shape[1]), (0, frames.shape[2])],
-        args=(frames,),
-        disp=True,
-        workers=-1,
-        init='sobol',
-        popsize=500,
-        mutation=1.5,
-    )
+    """Register by minimizing Gratadour cost
 
-    return result
+    Args:
+        frames (ndarray): noisy frames of size (frames, width, height)
+
+    Returns:
+        ndarray: shift estimate of each frame
+    """
+
+    from scipy.optimize import fmin_cg
+
+    # initialize with random shift
+    x0 = np.random.random(len(frames) * 2)
+
+    shifts = fmin_cg(f, x0=x0, args=(frames,)).reshape(len(frames), 2)
+
+    return shifts
