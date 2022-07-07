@@ -1,5 +1,6 @@
 numpy
 scipy
 pqdm
+expsweep
 git+https://github.com/bsavitzky/rigidRegistration@4368ea11d57ae9ea20eaa8d281f7e1929903fa3a#egg=rigidregistration
 git+ssh://git@github.com/uiuc-sine/mas#egg=uiuc_mas&subdirectory=python
