@@ -4,7 +4,7 @@
 % --------------------------------------------------------------------------
 \documentclass{article}
 \usepackage{algorithm,algpseudocode,bm,cancel,import,spconf,amsmath,amssymb,graphicx,verbatim,url,xcolor,soul}
-% \usepackage[margin=0.8in]{geometry}
+\usepackage[margin=0.86in]{geometry}
 
 % ------------------- Macros ----------------------
 % probability equals sign
@@ -22,13 +22,16 @@
 \DeclareMathOperator*{\argmin}{\arg\min}
 \DeclareMathOperator*{\argmax}{\arg\max}
 
-
 % ------------------- Header ----------------------
 
 \title{Low SNR Multiframe Registration for Cubesats}
-\name{Evan Widloski and Farzad Kamalabadi}
-\address{University of Illinois Urbana-Champaign}
-
+\name{Evan Widloski \qquad Farzad Kamalabadi
+  \thanks{This work was supported in part by the National Science Foundation AGS-ATM Grant 1936663.}
+}
+\address{
+Department of Electrical and Computer Engineering and Coordinated Science Laboratory, \\
+University of Illinois at Urbana-Champaign, Urbana, IL 61801, USA
+}
 
 \begin{document}
 \maketitle
@@ -56,7 +59,7 @@ Registration techniques have been broadly classified into \emph{area-based} and 
 There have been several publications which propose a maximum likelihood (ML) approach to registration, starting with Bradley \cite{bradley1973equivalence}, who showed an equivalence between ML and least squares estimates along with Kumar \cite{kumar1992correlation} specifically for registration under additive white Gaussian noise (AWGN).  Later, Mort \& Srinath \cite{mort1988maximum} developed an ML subpixel registration algorithm for pairs of Nyquist-sampled images.  Guillaume, et al. \cite{guillaume1998maximum} and Gratadour et al. \cite{gratadour2005sub} developed a method for a sequence of low SNR astronomical image frames under Poisson and Gaussian noise.
 Guizar-Sicairos et al. \cite{guizar2008efficient} proposed an efficient subpixel scheme by upsampling in the frequency domain with direct DFT evaluations.
 
-Our algorithm \footnote{https://github.com/evidlo/multiml} is most closely related to to the method devised by Gratadour et al. \cite{gratadour2005sub}, who applied their algorithm to images from an infrared galactic source taken from a ground based telescope.  They derive a cost function for an image sequence with unconstrained motion, then used an iterative conjugate gradient minimization requiring evaluation of the cost gradient along with hyperparameter tuning.
+Our algorithm (available as a Python package \footnote{https://github.com/evidlo/multiml}) is most closely related to to the method devised by Gratadour et al. \cite{gratadour2005sub}, who applied their algorithm to images taken from an infrared, ground-based telescope.  They derive a cost function for an image sequence with unconstrained translation, then used an iterative conjugate gradient minimization requiring evaluation of the cost gradient along with hyperparameter tuning.
 
 We have discovered that when this cost function is constrained to constant interframe motion, the global optimum can be found without the use of an iterative minimizer, requiring only image addition, multiplication, downscaling, and FFT operations which are easily implementable on embedded platforms like FPGAs or are already available as off-the-shelf IP cores \cite{xilinx}, making on-board registration and fusion straightforward.
 
@@ -80,7 +83,9 @@ We have discovered that when this cost function is constrained to constant inter
 \label{fig:scene}
 \end{figure}
 
-Our algorithm was conceived for the upcoming VISORS mission, a technology demonstration of a diffractive optical element known as a photon sieve designed to study the solar corona at high resolution \cite{gundamraj2021preliminary} \cite{koenig2021formation}. VISORS features two freely-flying cubesats where the apparent motion of the scene is approximately constant translation during each 10 second science capture window.  This stronger assumption about the motion allows us to register image frames at lower SNRs than more general methods, even when visible features are significantly below the noise floor, as in Fig. \ref{fig:scene}.  Additionally, registering and fusing images sequences on-board rather than on the ground can significantly increase the science return with the limited data downlink budget available on VISORS.
+Our algorithm was conceived for the upcoming VISORS mission, a technology demonstration of a diffractive optical element known as a photon sieve designed to study the solar corona at high resolution \cite{gundamraj2021preliminary} \cite{lightseyconcept2022}. VISORS features two freely-flying cubesats where the apparent motion of the scene is approximately constant translation during the science capture window.  This stronger assumption about the motion allows us to register image frames at lower SNRs than more general methods, even when visible features are significantly below the noise floor, as in Fig. \ref{fig:scene}.  Additionally, registering and fusing low SNR images sequences with VISORS's on-board FPGA rather than on the ground can significantly reduce the size of the science data during downlink.
+
+%% increase the science return with the limited data downlink budget available.
 
 %% This stronger assumption about the motion allows us to register image frames at lower SNRs than more general methods, even when visible features are significantly below the noise floor, as in Fig. \ref{fig:scene}.  In addition, the motion assumption results in a closed form cost function which needs no iterative minimization, has no parameters to be tuned, and can be evaluated efficiently with functions commonly available on embedded imaging systems.
 
@@ -243,13 +248,15 @@ which is identical to Equation \ref{eq:algorithm_orig} given in the previous sec
 \section{Experimental Results}
 \label{sec:results}
 
-To evaluate performance of the algorithm, we generated a series of simulated $250\times250$ pixel noisy frames from Hubble deep field images (shown in Fig. \ref{fig:recon}a) according to the motion and noise model given in Equation \ref{eq:model}.  We estimated interframe motion using our algorithm in Equation \ref{eq:algorithm} and then coadded the corrected frames as in Equation \ref{eq:mu} to obtain the reconstruction in Fig. \ref{fig:recon}b.
+To evaluate performance of the algorithm, we generated a series of simulated $250\times250$ pixel noisy frames from Hubble deep field images (shown in Fig. \ref{fig:recon}a) according to the motion and noise model given in Equation \ref{eq:model} with a small amount of realistic translational and rotational jitter to model the attitude control system present in all spacecraft. We estimated interframe motion using our algorithm in Equation \ref{eq:algorithm} and then coadded the corrected frames as in Equation \ref{eq:mu} to obtain the reconstruction in Fig. \ref{fig:recon}b.
 
 We repeated this experiment with various noise levels and number of frames for 50 trials each with a random motion vector and noise.  As shown in Fig. \ref{fig:db_sweep} and corroborated in \cite{gratadour2005sub}, the registration error decreases with increasing number of frames $K$ and is able to obtain less than 1 pixel of mean absolute registration error at -25dB measurement noise for $K=20$ frames, and the same at -30dB for $K=40$.
 
+%% Next, we compared registration performance on astronomical data against \new{three other methods.  The first is provided by Ginsburg et al. \cite{ginsburg2013bolocam}, originally used for registering images of cosmic dust in infrared.  Next is Astroalign \cite{beroiz2020astroalign}, designed for robust alignment of asterisms (star patterns). Finally, we compare against a pairwise version of the algorithm given by Guizar-Sicairos \cite{guizar2008efficient}.}  Since these algorithms have a non-constant motion model, we project their motion estimates to the nearest constant, rigid motion estimate for a fairer comparison.  Again, the experiment was repeated for 50 trials with a randomized motion vector, noise realization \new{and rotation/jitter}.
+
 Next, we compared registration performance on astronomical data against another area-based registration method provided by Ginsburg et al. \cite{ginsburg2013bolocam}, originally used for registering images of cosmic dust in infrared and also against a pairwise version of the algorithm given by Guizar-Sicairos \cite{guizar2008efficient}.  Since these algorithms have a non-constant motion model, we project their motion estimates to the nearest constant, rigid motion estimate for a fairer comparison.  Again, the experiment was repeated for 50 trials with a randomized motion vector and noise realization.
 
-Fig. \ref{fig:method_compare} shows that our algorithm is able to successfully register images at over 10dB lower SNR.
+Fig. \ref{fig:method_compare} shows that our algorithm is able to successfully register images at 10dB lower SNR.
 
 
 \begin{figure}[htb]
@@ -296,7 +303,7 @@ The algorithm is useful in settings where motion is constant and rigid, images a
     \centering
     \centerline{\includegraphics[width=8.5cm]{images/db_sweep.pdf}}
   \end{minipage}
-  \caption{Registration absolute error for various AWGN SNRs and number of frames $K$ with a randomly chosen constant motion vector. 50 trials. 1 std. dev. error bands.}
+  \caption{Registration absolute error for various AWGN SNRs and number of frames $K$ with a randomly chosen constant motion vector. 50 trials. 1 std. dev. bands.}
   \label{fig:db_sweep}
 \end{figure}
 
@@ -305,7 +312,7 @@ The algorithm is useful in settings where motion is constant and rigid, images a
     \centering
     \centerline{\includegraphics[width=8.5cm]{images/method_compare.pdf}}
   \end{minipage}
-  \caption{Comparison of registration error of our method vs \cite{ginsburg2013bolocam} and \cite{guizar2008efficient} for various noise levels, $K=20$. 50 trials.  1 std. dev. error bands.}
+  \caption{Comparison of registration error of our method vs \cite{ginsburg2013bolocam} and \cite{guizar2008efficient} for various noise levels, $K=20$. 50 trials.  1 std. dev. bands.}
   \label{fig:method_compare}
 \end{figure}
 

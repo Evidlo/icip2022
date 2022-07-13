@@ -24,3 +24,6 @@ devserver:
 		# wait for file changes
 		inotifywait -e modify *
 	done
+
+arxiv:
+	 zip -r icip.zip ICIP.bbl ICIP.aux ICIP.tex IEEEbib.bst refs.bib spconf.sty images/
