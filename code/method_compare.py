@@ -5,7 +5,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import rigidregistration
 from multiml.observation import test_sequence
 
 # ----- experiment -----

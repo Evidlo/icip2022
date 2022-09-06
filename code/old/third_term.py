@@ -13,7 +13,7 @@ def compute_first(*, K, c, N, y_list):
     result = 0
     for k in range(0, K):
         for n in range(0, N):
-            result += y_list[k][n]
+            result += y_list[k][n]**2
     return result
 
 def compute_second(*, K, c, N, y_list):
@@ -87,7 +87,7 @@ N = 30
 c = 1
 # y = np.arange(N)
 y = np.random.random(N)
-y = np.array([1,2,3,4,4,4,4,5,6,3,2,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3])
+# y = np.array([1,2,3,4,4,4,4,5,6,3,2,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3,1,1,3,3])
 # y = np.zeros(N)
 # y[0] = 1
 # y[1] = 1
@@ -110,22 +110,21 @@ def scan(func, *, c, K, N, y_list):
 def norm(x):
     if not type(x) is np.ndarray:
         x = np.array(x)
-    return x
     return (x - x.min()) / (x.max() - x.min())
 
-first = norm(scan(compute_first, c=c, K=K, N=N, y_list=y_list))
+# first = scan(compute_first, c=c, K=K, N=N, y_list=y_list)
 second = norm(scan(compute_second, c=c, K=K, N=N, y_list=y_list))
 third = norm(scan(compute_third, c=c, K=K, N=N, y_list=y_list))
 combined = norm(scan(compute_combined, c=c, K=K, N=N, y_list=y_list))
-added = norm(-2 * second + third)
-# multiml = 30 * norm(compute_multiml(c=c, K=K, N=N, y_list=y_list))
+# added = norm(-2 * second + third)
+multiml = norm(compute_multiml(c=c, K=K, N=N, y_list=y_list))
 
-plt.plot(first, label='first')
+# plt.plot(first, label='first')
 plt.plot(second, label='second')
 plt.plot(third, label='third')
 # plt.plot(combined, '*', label='combined')
-plt.plot(added, 'o', label='added')
-# plt.plot(multiml, label='multiml')
+# plt.plot(added, 'o', label='added')
+plt.plot(multiml, label='multiml')
 
 plt.legend(loc='upper right')
 plt.show()
