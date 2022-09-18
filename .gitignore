@@ -8,6 +8,7 @@ tmp/
 *.log
 *.pdf
 *.pyc
+**/*.zip
 
 code/old
 paper/papers/
