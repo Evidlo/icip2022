@@ -2,14 +2,15 @@
 .SILENT:
 
 SOURCE := ICIP.tex
+ARGS := -k
 
 all:
-	tectonic ${SOURCE}
+	tectonic ${ARGS} ${SOURCE}
 
 devserver:
 	while :;
 	do
-		tectonic ${SOURCE}
+		tectonic ${ARGS} ${SOURCE}
 		# play sound on success or failure
 		if (( $$? ))
 		then
@@ -25,5 +26,8 @@ devserver:
 		inotifywait -e modify *
 	done
 
-arxiv:
-	 zip -r icip.zip ICIP.bbl ICIP.aux ICIP.tex IEEEbib.bst refs.bib spconf.sty images/
+arxiv: all
+	 zip -r icip.zip ICIP.tex ICIP.bbl spconf.sty images/
+
+clean:
+	rm icip.zip ICIP.pdf ICIP.bbl ICIP.log ICIP.blg

@@ -12,3 +12,12 @@ tmp/
 
 code/old
 paper/papers/
+.DS_Store
+.idea
+*.log
+tmp/
+
+*.log
+*.pdf
+*.bbl
+*.blg
